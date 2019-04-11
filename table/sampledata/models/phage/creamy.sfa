@@ -1,0 +1,105 @@
+{
+  animations: [
+    {
+      clips: [
+        {
+          name: 'CINEMA_4D_Main',
+        },
+      ],
+      path: 'sampledata/models/phage/creamy.fbx',
+    },
+  ],
+  materials: [
+    {
+      name: 'inside color',
+      parameters: [
+        {
+          baseColor: [
+            0.91764699999999999,
+            1,
+            0.81568600000000002,
+            1,
+          ],
+        },
+        {
+          baseColorMap: null,
+        },
+        {
+          normalMap: null,
+        },
+        {
+          interpolatedColor: null,
+        },
+        {
+          metallic: 0,
+        },
+        {
+          metallicMap: null,
+        },
+        {
+          roughness: 1,
+        },
+        {
+          roughnessMap: null,
+        },
+        {
+          opacity: null,
+        },
+      ],
+      source: 'build/sceneform_sdk/default_materials/fbx_material.sfm',
+    },
+    {
+      name: 'frame color',
+      parameters: [
+        {
+          baseColor: [
+            0.95294100000000004,
+            0.50588200000000005,
+            0.50588200000000005,
+            1,
+          ],
+        },
+        {
+          baseColorMap: null,
+        },
+        {
+          normalMap: null,
+        },
+        {
+          interpolatedColor: null,
+        },
+        {
+          metallic: 0,
+        },
+        {
+          metallicMap: null,
+        },
+        {
+          roughness: 1,
+        },
+        {
+          roughnessMap: null,
+        },
+        {
+          opacity: null,
+        },
+      ],
+      source: 'build/sceneform_sdk/default_materials/fbx_material.sfm',
+    },
+  ],
+  model: {
+    attributes: [
+      'Position',
+      'TexCoord',
+      'Orientation',
+      'BoneIndices',
+      'BoneWeights',
+    ],
+    collision: {},
+    file: 'sampledata/models/phage/creamy.fbx',
+    name: 'creamy',
+    recenter: 'root',
+    scale: 0.25
+  },
+  version: '0.54:2',
+}
