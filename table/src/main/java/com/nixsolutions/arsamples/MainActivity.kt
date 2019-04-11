@@ -4,11 +4,9 @@ import android.animation.ObjectAnimator
 import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.MotionEvent
 import android.view.animation.LinearInterpolator
 import com.google.ar.core.Config
 import com.google.ar.core.HitResult
-import com.google.ar.core.Plane
 import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.Node
@@ -39,13 +37,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         arFragment = supportFragmentManager.findFragmentById(R.id.sceneform_fragment) as ArFragment?
-        arFragment?.setOnTapArPlaneListener(::placeTable)
+        arFragment?.setOnTapArPlaneListener { hitResult, _, _ -> placeTable(hitResult) }
         setupDefaultModels()
         loadRenderable(Uri.parse("phage.sfb")) { model -> phageRenderable = model }
         loadRenderable(Uri.parse("table.sfb")) { model -> tableRenderable = model }
     }
 
-    private fun placeTable(hitResult: HitResult, unusedPlane: Plane, unusedMotionEvent: MotionEvent) {
+    override fun onResume() {
+        super.onResume()
+        enableVerticalSurfaceDetection()
+    }
+
+    private fun placeTable(hitResult: HitResult) {
         if (phageRenderable == null || tableRenderable == null) {
             return
         }
@@ -54,17 +57,13 @@ class MainActivity : AppCompatActivity() {
         val anchorNode = AnchorNode(anchor)
         anchorNode.setParent(arFragment?.arSceneView?.scene)
 
-        table = TransformableNode(arFragment?.transformationSystem)
-        table?.setParent(anchorNode)
-        table?.renderable = tableRenderable
+        table = TransformableNode(arFragment?.transformationSystem).apply {
+            setParent(anchorNode)
+            renderable = tableRenderable
+        }
 
         placePhage()
         disableSurfaceDetection()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        enableVerticalSurfaceDetection()
     }
 
     private fun startRotating(node: Node) {
@@ -90,11 +89,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun playSkeletonAnimation() {
-        if (phageRenderable != null) {
-            val data = phageRenderable?.getAnimationData(nextAnimation)
-            nextAnimation = (nextAnimation + 1) % phageRenderable!!.animationDataCount
-            animator = ModelAnimator(data, phageRenderable)
-            animator?.start()
+        phageRenderable?.apply {
+            val data = getAnimationData(nextAnimation)
+            nextAnimation = (nextAnimation + 1) % animationDataCount
+            animator = ModelAnimator(data, this).apply { start() }
         }
     }
 
@@ -105,40 +103,27 @@ class MainActivity : AppCompatActivity() {
 
         MaterialFactory.makeOpaqueWithColor(this, color).thenAccept {
             sphere = ShapeFactory.makeSphere(pointRadius, Vector3.zero(), it)
-        }
-
-        MaterialFactory.makeOpaqueWithColor(this, color).thenAccept {
             cube = ShapeFactory.makeCube(cubeVector, Vector3.zero(), it)
-        }
-
-        MaterialFactory.makeOpaqueWithColor(this, color).thenAccept {
             cylinder = ShapeFactory.makeCylinder(0.1f, 1.0f, Vector3.zero(), it)
         }
-
     }
 
     private fun changeSurfaceTexture() {
-        if (arFragment == null) {
-            return
-        }
         val build = Texture.builder().setSource(this, R.drawable.plane).build()
         arFragment!!.arSceneView
             .planeRenderer
             .material
             .thenAcceptBoth<Texture>(build) { material, texture ->
-                material.setTexture(
-                    PlaneRenderer.MATERIAL_TEXTURE,
-                    texture
-                )
+                material.setTexture(PlaneRenderer.MATERIAL_TEXTURE, texture)
             }
     }
 
     private fun placeModel(hitResult: HitResult, renderable: Renderable) {
         val anchor = hitResult.createAnchor()
         val anchorNode = AnchorNode(anchor)
-        anchorNode.setParent(arFragment?.arSceneView?.scene)
-
         val node = TransformableNode(arFragment?.transformationSystem)
+
+        anchorNode.setParent(arFragment?.arSceneView?.scene)
         node.setParent(anchorNode)
         node.renderable = renderable
     }
@@ -162,8 +147,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun placePhage() {
         val phageNode = Node()
-
         val phageSkeletonNode = SkeletonNode()
+
         phageSkeletonNode.apply {
             setParent(table)
             setBoneAttachment(PHAGE_BONE_NAME, phageSkeletonNode)
@@ -179,12 +164,12 @@ class MainActivity : AppCompatActivity() {
 
         }
         playSkeletonAnimation()
+        startRotating(phageNode)
     }
 
     private fun disableSurfaceDetection() {
         arFragment?.arSceneView?.planeRenderer?.isVisible = false
     }
-
 
     private fun loadRenderable(uri: Uri, callback: (ModelRenderable) -> Unit) {
         ModelRenderable.builder()

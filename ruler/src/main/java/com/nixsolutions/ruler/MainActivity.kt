@@ -1,6 +1,5 @@
 package com.nixsolutions.ruler
 
-import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.TextView
@@ -13,7 +12,7 @@ import com.google.ar.sceneform.rendering.*
 import com.google.ar.sceneform.ux.ArFragment
 import java.text.DecimalFormat
 
-class RulerActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val pointRadius = 0.02f
     private var lastVector: Vector3? = null
@@ -30,6 +29,11 @@ class RulerActivity : AppCompatActivity() {
         arFragment?.setOnTapArPlaneListener { hitResult, _, _ -> onSceneTap(hitResult) }
     }
 
+    override fun onStart() {
+        super.onStart()
+        initModel()
+    }
+
     private fun onSceneTap(hitResult: HitResult) {
         if (point == null) {
             return
@@ -43,7 +47,7 @@ class RulerActivity : AppCompatActivity() {
             anchorNode.worldPosition
         } else {
             val newVector = anchorNode.worldPosition
-            drawLineBetweenPoints(newVector, lastVector!!, anchorNode, this)
+            drawLineBetweenPoints(newVector, lastVector!!, anchorNode)
             newVector
         }
 
@@ -52,43 +56,33 @@ class RulerActivity : AppCompatActivity() {
         pointNode.renderable = point
     }
 
-    private fun drawLineBetweenPoints(
-        point1: Vector3,
-        point2: Vector3,
-        anchorNode: AnchorNode,
-        context: Context
-    ) {
+    private fun drawLineBetweenPoints(point1: Vector3, point2: Vector3, anchorNode: AnchorNode) {
         val difference = Vector3.subtract(point1, point2)
         val directionFromTopToBottom = difference.normalized()
-        val rotationFromAToB = Quaternion.lookRotation(
-            directionFromTopToBottom,
-            Vector3.up()
-        )
-
+        val rotationFromAToB = Quaternion.lookRotation(directionFromTopToBottom, Vector3.up())
         val length = difference.length()
-        val lineRenderable = ShapeFactory.makeCube(
-            Vector3(.01f, .01f, length),
-            Vector3.zero(), blueMaterial
-        )
-
+        val lineRenderable = ShapeFactory.makeCube(Vector3(.01f, .01f, length), Vector3.zero(), blueMaterial)
         val line = Node()
-        line.setParent(anchorNode)
-        line.renderable = lineRenderable
-        line.worldPosition = Vector3.add(point1, point2).scaled(.5f)
-        line.worldRotation = rotationFromAToB
 
-        ViewRenderable.builder().setView(context, R.layout.length_counter)
+        line.apply {
+            setParent(anchorNode)
+            renderable = lineRenderable
+            worldPosition = Vector3.add(point1, point2).scaled(.5f)
+            worldRotation = rotationFromAToB
+        }
+
+        ViewRenderable.builder()
+            .setView(this, R.layout.length_counter)
             .build()
             .thenAccept { setupLengthTextView(it, anchorNode, length) }
     }
 
     private fun setupLengthTextView(viewRenderable: ViewRenderable, anchorNode: AnchorNode, length: Float) {
-
         viewRenderable.isShadowCaster = false
-        val format = DecimalFormat("#.###")
+        val decimalFormat = DecimalFormat("#.###")
         val counter = viewRenderable.view
         val textView = counter.findViewById<TextView>(R.id.counter)
-        val lengthFormatString = getString(R.string.counter_format_meters, format.format(length.toDouble()))
+        val lengthFormatString = getString(R.string.counter_format_meters, decimalFormat.format(length.toDouble()))
         textView.text = lengthFormatString
 
         val linePos = anchorNode.worldPosition
@@ -101,12 +95,6 @@ class RulerActivity : AppCompatActivity() {
         lengthNode.setParent(anchorNode)
         lengthNode.localPosition = Vector3(0f, 0.2f, 0f)
         lengthNode.worldRotation = quaternion
-    }
-
-
-    override fun onStart() {
-        super.onStart()
-        initModel()
     }
 
     private fun initModel() {
