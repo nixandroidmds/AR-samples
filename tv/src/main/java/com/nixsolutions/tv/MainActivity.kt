@@ -1,6 +1,5 @@
 package com.nixsolutions.tv
 
-import android.graphics.SurfaceTexture
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
@@ -55,7 +54,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val videoHeightMeters = 0.85f
         val anchor = hitResult.createAnchor()
         val anchorNode = AnchorNode(anchor)
         val videoNode = Node()
@@ -71,15 +69,13 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-
         if (!mediaPlayer!!.isPlaying) {
             mediaPlayer!!.start()
 
-            texture.surfaceTexture
-                .setOnFrameAvailableListener {
-                    videoNode.renderable = videoRenderable
-                    texture.surfaceTexture.setOnFrameAvailableListener(null)
-                }
+            texture.surfaceTexture.setOnFrameAvailableListener {
+                videoNode.renderable = videoRenderable
+                texture.surfaceTexture.setOnFrameAvailableListener(null)
+            }
         } else {
             videoNode.renderable = videoRenderable
         }
@@ -90,5 +86,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun disableSurfaceDetection() {
         arFragment!!.arSceneView.planeRenderer.isVisible = false
+    }
+
+    companion object {
+
+        private const val videoHeightMeters = 0.85f
     }
 }

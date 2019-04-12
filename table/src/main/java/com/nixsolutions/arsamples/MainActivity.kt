@@ -21,7 +21,6 @@ import com.google.ar.sceneform.ux.TransformableNode
 
 class MainActivity : AppCompatActivity() {
 
-    private val PHAGE_BONE_NAME = "bone_name"
     private var arFragment: ArFragment? = null
     private var phageRenderable: ModelRenderable? = null
     private var table: TransformableNode? = null
@@ -98,7 +97,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupDefaultModels() {
         val color = Color(0f, 255f, 244f)
-        val pointRadius = 0.1f
         val cubeVector = Vector3(0.1f, 0.1f, 0.1f)
 
         MaterialFactory.makeOpaqueWithColor(this, color).thenAccept {
@@ -176,5 +174,11 @@ class MainActivity : AppCompatActivity() {
             .setSource(this, uri)
             .build()
             .thenApply { callback(it) }
+    }
+
+    companion object {
+
+        private const val PHAGE_BONE_NAME = "bone_name"
+        private const val pointRadius = 0.1f
     }
 }

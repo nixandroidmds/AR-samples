@@ -14,7 +14,6 @@ import java.text.DecimalFormat
 
 class MainActivity : AppCompatActivity() {
 
-    private val pointRadius = 0.02f
     private var lastVector: Vector3? = null
     private var point: ModelRenderable? = null
     private var blueMaterial: Material? = null
@@ -22,7 +21,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
 
         arFragment = supportFragmentManager.findFragmentById(R.id.arFragment) as ArFragment
@@ -104,5 +102,10 @@ class MainActivity : AppCompatActivity() {
                 point = ShapeFactory.makeSphere(pointRadius, Vector3.zero(), blueMaterial)
             }
         }
+    }
+
+    companion object {
+
+        private const val pointRadius = 0.02f
     }
 }
