@@ -4,7 +4,7 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/counter"
+        android:id="@+id/lengthTextView"
         style="@style/Wrap"
         android:textColor="@android:color/black"
         android:textSize="20sp"/>
