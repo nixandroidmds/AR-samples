@@ -10,7 +10,7 @@ import com.google.ar.sceneform.ux.ArFragment
 import com.nixsolutions.ruler.R
 import com.nixsolutions.ruler.contract.RulerActivityContract
 import com.nixsolutions.ruler.presenter.RulerPresenter
-import kotlinx.android.synthetic.main.length_counter.view.*
+import kotlinx.android.synthetic.main.length_text_view.view.*
 import java.util.concurrent.CompletableFuture
 
 class RulerActivity : AppCompatActivity(), RulerActivityContract.View {

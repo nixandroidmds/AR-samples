@@ -1,12 +1,15 @@
 package com.nixsolutions.ruler.utils
 
+import android.support.annotation.LayoutRes
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.Node
+import com.google.ar.sceneform.Scene
 import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.Material
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ShapeFactory
+import com.google.ar.sceneform.rendering.ViewRenderable
 
 object ArUtils {
 
@@ -36,9 +39,43 @@ object ArUtils {
         return length
     }
 
-    fun attachToAnchorNode(anchorNode: AnchorNode, renderable: ModelRenderable?) {
+    fun attachRenderableToNode(node: Node, renderable: ModelRenderable?) {
         val pointNode = Node()
-        pointNode.setParent(anchorNode)
+        pointNode.setParent(node)
         pointNode.renderable = renderable
+    }
+
+    fun attachViewToNode(
+        node: Node,
+        scene: Scene?,
+        @LayoutRes layoutRes: Int,
+        localPositionVector: Vector3,
+        viewSetupCallback: (ViewRenderable) -> Unit
+    ) {
+        initViewRenderable(scene, layoutRes) {
+            it.isShadowCaster = false
+            viewSetupCallback(it)
+            val linePos = node.worldPosition
+            val cameraPos = scene?.camera?.worldPosition
+            val direction = Vector3.subtract(cameraPos, linePos)
+            val quaternion = Quaternion.lookRotation(direction, Vector3.up())
+            val lengthNode = Node()
+
+            lengthNode.renderable = it
+            lengthNode.setParent(node)
+            lengthNode.localPosition = localPositionVector
+            lengthNode.worldRotation = quaternion
+        }
+    }
+
+    fun initViewRenderable(
+        scene: Scene?,
+        @LayoutRes layoutRes: Int,
+        initCallback: (ViewRenderable) -> Unit
+    ) {
+        ViewRenderable.builder()
+            .setView(scene?.view?.context, layoutRes)
+            .build()
+            .thenAccept { initCallback(it) }
     }
 }

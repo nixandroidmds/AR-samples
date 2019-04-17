@@ -2,14 +2,11 @@ package com.nixsolutions.ruler.presenter
 
 import com.google.ar.core.HitResult
 import com.google.ar.sceneform.AnchorNode
-import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.Scene
-import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.Material
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ShapeFactory
-import com.google.ar.sceneform.rendering.ViewRenderable
 import com.nixsolutions.ruler.R
 import com.nixsolutions.ruler.contract.RulerActivityContract
 import com.nixsolutions.ruler.utils.ArUtils
@@ -31,15 +28,27 @@ class RulerPresenter(private val view: RulerActivityContract.View) : RulerActivi
         anchorNode.setParent(scene)
 
         lastVector = lastVector?.let {
-            val newVector = anchorNode.worldPosition
-            val length = ArUtils.drawLineBetweenPoints(newVector, it, anchorNode, blueMaterial)
-            setupLengthRenderable(scene, anchorNode, length)
+            val newVector = setupLine(anchorNode, it, scene)
             newVector
         } ?: anchorNode.worldPosition
 
-        ArUtils.attachToAnchorNode(anchorNode, pointRenderable)
+        ArUtils.attachRenderableToNode(anchorNode, pointRenderable)
     }
 
+    private fun setupLine(anchorNode: AnchorNode, lastVector: Vector3, scene: Scene?): Vector3? {
+        val newVector = anchorNode.worldPosition
+        val length = ArUtils.drawLineBetweenPoints(newVector, lastVector, anchorNode, blueMaterial)
+        val localPositionVector = Vector3.up().apply { y = LENGTH_NODE_Y_POSITION }
+        ArUtils.attachViewToNode(
+            anchorNode,
+            scene,
+            R.layout.length_text_view,
+            localPositionVector
+        ) { renderable ->
+            view.setupLengthTextView(renderable, length)
+        }
+        return newVector
+    }
 
     override fun initModel() {
         if (pointRenderable == null && blueMaterial == null) {
@@ -52,28 +61,6 @@ class RulerPresenter(private val view: RulerActivityContract.View) : RulerActivi
 
     override fun getFormattedLength(length: Float): String =
         DecimalFormat(LENGTH_LABEL_FORMAT).format(length.toDouble())
-
-    private fun setupLengthRenderable(scene: Scene?, anchorNode: AnchorNode, length: Float) {
-        ViewRenderable.builder()
-            .setView(scene?.view?.context, R.layout.length_counter)
-            .build()
-            .thenAccept { setupLengthLabel(it, anchorNode, length, scene) }
-    }
-
-    private fun setupLengthLabel(renderable: ViewRenderable, anchorNode: AnchorNode, length: Float, scene: Scene?) {
-        renderable.isShadowCaster = false
-        view.setupLengthTextView(renderable, length)
-        val linePos = anchorNode.worldPosition
-        val cameraPos = scene?.camera?.worldPosition
-        val direction = Vector3.subtract(cameraPos, linePos)
-        val quaternion = Quaternion.lookRotation(direction, Vector3.up())
-        val lengthNode = Node()
-
-        lengthNode.renderable = renderable
-        lengthNode.setParent(anchorNode)
-        lengthNode.localPosition = Vector3.up().apply { y = LENGTH_NODE_Y_POSITION }
-        lengthNode.worldRotation = quaternion
-    }
 
     companion object {
 
