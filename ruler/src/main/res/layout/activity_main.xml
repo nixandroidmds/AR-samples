@@ -3,7 +3,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         style="@style/MatchParent"
-        tools:context=".MainActivity">
+        tools:context=".activity.RulerActivity">
 
     <fragment
             android:id="@+id/arFragment"

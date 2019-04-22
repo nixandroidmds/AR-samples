@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Ruler</string>
-    <string name="counter_format_meters">%s Meters</string>
+    <string name="length_label_format_meters">%s Meters</string>
 </resources>
